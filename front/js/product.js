@@ -1,111 +1,68 @@
-//Récupération de l'id via les paramètres de l'url
-const idProduct = new URL(window.location.href).searchParams.get("id");
+let product;
+const init = async function () {
+  const recupId = window.location.search; // Recuperer la partie search de l'url
+  const urlSearchParam = new URLSearchParams(recupId); //Faire ressortir le id du produit a partir de l'url
+  const leId = urlSearchParam.get("id"); //Faire ressortir le id du produit a partir de l'url
 
-//Récupération des sélecteurs pour les futurs modifications
-let imgProduct = document.querySelector(".item__img");
-let img = document.createElement("img");
-imgProduct.appendChild(img);
-let titleProduct = document.getElementById("title");
-let priceProduct = document.getElementById("price");
-let descriptionProduct = document.getElementById("description");
-let colorsProduct = document.getElementById("colors");
+  const productPromise = fetch("http://localhost:3000/api/products/" + leId) //Recuperer les donnees du produit de l'API en utilisant le id
+    .then((res) => {
+      return res.json();
+    });
 
+  await productPromise;
+  productPromise.then((data) => {
+    console.log(data);
+    product = data;
+    document.getElementById("title").innerHTML = data.name; //Afficher ou injecté les donnees
+    document.getElementById("price").innerHTML = data.price;
+    document.getElementById("description").innerHTML = data.description;
+    document.querySelector(".item__img img").setAttribute("src", data.imageUrl);
 
-//Récupération de l'article grace a l'id + affichage des données de ce dernier
-getArticle();
+    data.colors.forEach((color) => {
+      const colorElement = document.createElement("option");
+      colorElement.setAttribute("value", color);
+      colorElement.innerHTML = color;
+      document.getElementById("colors").appendChild(colorElement); //Afficher ou injecté les donnees
+    });
+  });
+};
 
+document.getElementById("addToCart").addEventListener("click", () => {
+  const quantity = document.getElementById("quantity").value; // -2
+  const color = document.querySelector("#colors").value;
 
-//Récupération de l'article grace a l'id + affichage des données de ce dernier
-async function getArticle() {
-     await fetch("http://localhost:3000/api/products/" + idProduct)
-    .then((response) => response.json())    
-    .then(product => {
-        img.setAttribute("src", product.imageUrl);
-        img.setAttribute("alt", product.altTxt);    
-        titleProduct.innerHTML = product.name;
-        priceProduct.innerHTML = product.price;
-        descriptionProduct.innerHTML = product.description;
-        document.title = product.name;
+  if (parseInt(quantity) <= 0 || !color) {
+    alert("Choisir une couleur ou bien aumoins 1 article");
+    return;
+  }
+  let products = window.localStorage.getItem("selectedProducts");
+  if (products) {
+    products = JSON.parse(products);
+  } else {
+    products = [];
+  }
+  const choice = {
+    _id: product._id,
+    color: color,
+    quantity: parseInt(quantity),
+  };
 
-        for (let i=0; i < product.colors.length; i++) {
-            let color = document.createElement("option");
-            color.setAttribute("value", product.colors[i]);
-            color.innerHTML = product.colors[i];
-            colorsProduct.appendChild(color);
-        }  
-    });          
-}
+  // 1. Si un produit avec "product._id" et "color" existent deja dans "products"
+  const storageProductIndex = products.findIndex(
+    (item) => item._id === choice._id && item.color === color
+  );
+  if (storageProductIndex !== -1) {
+    const storageProduct = products[storageProductIndex];
+    choice.quantity = storageProduct.quantity + parseInt(quantity);
+    products.splice(storageProductIndex, 1, choice);
+  } else {
+    // 2. Sinon on fait un push normallement
+    products.push(choice);
+  }
+  window.localStorage.setItem("selectedProducts", JSON.stringify(products));
+  alert(
+    `Canapé ajouté avec succes dans. Vous avez desormais ${choice.quantity} pieces de ce canapé dans votre panier`
+  );
+});
 
-//
-let addToCartBtn = document.getElementById("addToCart");
-addToCartBtn.addEventListener("click", addToCart);
-
-function addToCart() {
-
-    if (localStorage.getItem("cart")) {
-     
-        let productCart = JSON.parse(localStorage.getItem("cart"));
-
-        console.log(productCart);
-
-        let idKanap = idProduct;
-        let nameKanap = document.querySelector("#title").textContent;
-        let colorKanap = document.querySelector("#colors").value;
-        let qtyKanap = document.querySelector("#quantity").value;
-        let imgKanap = img.src; 
-        // let altImg = ;
-        let priceKanap = document.querySelector("#price").textContent;
-        
-        console.log(img);
-        console.log(idKanap, nameKanap, colorKanap, qtyKanap, imgKanap, priceKanap);
-    
-        let productCartObj = {
-            idKanap : idProduct,
-            nameKanap : nameKanap,
-            colorKanap : colorKanap,
-            qtyKanap  : qtyKanap,
-            imgKanap : imgKanap,
-            priceKanap : priceKanap
-        };
-    
-        productCart.push(productCartObj);
-    
-        let objCart = JSON.stringify(productCart);
-        localStorage.setItem("cart", objCart);
-    
-        alert("Ajouté au panier !");
-
-    } else {
-
-
-        let productCart = [];
-
-        let idKanap = idProduct;
-        let nameKanap = document.querySelector("#title").textContent;
-        let colorKanap = document.querySelector("#colors").value;
-        let qtyKanap = document.querySelector("#quantity").value;
-        let imgKanap = img.src; 
-        // let altImg = ;
-        let priceKanap = document.querySelector("#price").textContent;
-        
-        console.log(img);
-        console.log(idKanap, nameKanap, colorKanap, qtyKanap, imgKanap, priceKanap);
-    
-        let productCartObj = {
-            idKanap : idProduct,
-            nameKanap : nameKanap,
-            colorKanap : colorKanap,
-            qtyKanap  : qtyKanap,
-            imgKanap : imgKanap,
-            priceKanap : priceKanap
-        };
-    
-        productCart.push(productCartObj);
-    
-        let objCart = JSON.stringify(productCart);
-        localStorage.setItem("cart", objCart);
-    
-        alert("Ajouté au panier !");
-       
-    }
-}
+init();
