@@ -47,27 +47,27 @@ async function getCart() {
 
       totalPrice += productData.price * product.quantity;
       totalQuantity += product.quantity;
+    }
 
+    for (let product of productLocalStorage) {
       // Event listener pour la modification de la quantite d'un produit
       document
         .getElementById(`itemQuantity_${product._id}_${product.color}`)
         .addEventListener("change", (event) => {
-          const id = product._id;
-          const color = product.color;
-          const elementId = event.target.getAttribute
-          modifQuantite(id, color, event.target.value);
+          modifQuantite(product._id, product.color, event.target.value);
         });
 
       // Event listener pour la suppression d'un produit
       document
         .getElementById(`deleteItem_${product._id}_${product.color}`)
-        .addEventListener("click", (event) => {
+        .addEventListener("click", () => {
           const quantity = document.getElementById(
             `itemQuantity_${product._id}_${product.color}`
           ).value;
           deleteProduct(product._id, product.color, quantity);
         });
     }
+
     document.getElementById("totalPrice").innerHTML = totalPrice;
     document.getElementById("totalQuantity").innerHTML = totalQuantity;
   }
