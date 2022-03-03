@@ -24,12 +24,18 @@ function displayData(data) {
         </article>
         </a>
       `;
-     
+
     console.log(product);
   });
 }
 
-recupData().then((data) => displayData(data));
+recupData()
+  .then((data) => displayData(data))
+  .catch((error) => {
+    alert(
+      "Desolé mais la liste des produits est indisponible pour l'instant. \n Veuillez ressayer plus tard."
+    );
+  });
 
 /* (async () => {
   const data = await recupData();
