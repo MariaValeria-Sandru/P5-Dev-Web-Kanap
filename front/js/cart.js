@@ -7,7 +7,7 @@ async function getCart() {
   if (productLocalStorage === null || productLocalStorage == 0) {
     // Si le panier est vide (strictement égal à 0)
     let productCart = document.querySelector("#cart__items");
-    productCart.innerHTML = "est actuellement vide ";
+    productCart.innerHTML = "Est actuellement vide ";
     productCart.style.textAlign = "center";
     productCart.style.fontWeight = "bold";
     productCart.style.fontSize = "2em";
@@ -78,10 +78,10 @@ function modifQuantite(productId, color, selectedQuantity) {
   const totalQuantityElem = document.getElementById("totalQuantity");
   const totalPrice = parseInt(totalPriceElem.innerHTML, 10);
   const totalQuantity = parseInt(totalQuantityElem.innerHTML, 10);
-  console.log(
-    "🚀 ~ file: cart.js ~ line 78 ~ modifQuantite ~ totalQuantity",
-    totalQuantity
-  );
+  //console.log(
+  // "🚀 ~ file: cart.js ~ line 78 ~ modifQuantite ~ totalQuantity",
+  //  totalQuantity
+  //);
   const itemIndex = productLocalStorage.findIndex(
     (elem) => elem._id === productId && elem.color === color
   );
@@ -129,3 +129,111 @@ function deleteProduct(productId, color, selectedQuantity) {
   );
   document.getElementById(`cart__item_${productId}_${color}`).remove();
 }
+const controlPrenomNomVille = (value) => {
+  return /^([A-Za-z\s]{3,20})?([-]{0,1})?([A-Za-z]{3,20})$/.test(value);
+};
+
+const controlAdresse = (value) => {
+  return /^[A-Za-z0-9\s]{3,100}$/.test(value);
+};
+
+const controlEmail = (value) => {
+  return /^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$/.test(value);
+};
+// Insertion du texte de bonne ou mauvaise saisie des informations
+document.querySelector("#email").addEventListener("change", (event) => {
+  if (!controlEmail(event.target.value)) {
+    document.querySelector("#emailErrorMsg").innerHTML =
+      "Addresse email incorrecte";
+  } else {
+    document.querySelector("#emailErrorMsg").innerHTML = "";
+  }
+});
+document.querySelector("#city").addEventListener("change", (event) => {
+  if (!controlPrenomNomVille(event.target.value)) {
+    document.querySelector("#cityErrorMsg").innerHTML = "City non valide";
+  } else {
+    document.querySelector("#cityErrorMsg").innerHTML = "";
+  }
+});
+document.querySelector("#address").addEventListener("change", (event) => {
+  if (!controlAdresse(event.target.value)) {
+    document.querySelector("#addressErrorMsg").innerHTML = "Address non valide";
+  } else {
+    document.querySelector("#addressErrorMsg").innerHTML = "";
+  }
+});
+
+document.querySelector("#firstName").addEventListener("change", (event) => {
+  if (!controlPrenomNomVille(event.target.value)) {
+    document.querySelector("#firstNameErrorMsg").innerHTML = "Nom non valide";
+  } else {
+    document.querySelector("#firstNameErrorMsg").innerHTML = "";
+  }
+});
+document.querySelector("#lastName").addEventListener("change", (event) => {
+  if (!controlPrenomNomVille(event.target.value)) {
+    document.querySelector("#lastNameErrorMsg").innerHTML = "Prenom non valide";
+  } else {
+    document.querySelector("#lastNameErrorMsg").innerHTML = "";
+  }
+});
+
+// Bouton "commander" pour soumettre le formulaire avec evenement au clic
+const orderButton = document.querySelector("#order");
+orderButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  form();
+});
+function form() {
+  if (productLocalStorage === null || productLocalStorage == 0) {
+    alert("votre panier est vide nous ne pouvons pas finaliser la commande ");
+    return;
+  } else {
+    const contact = {
+     firstName: document.querySelector("#firstName").value,
+      lastName: document.querySelector("#lastName").value,
+      address: document.querySelector("#address").value,
+      city: document.querySelector("#city").value,
+     email: document.querySelector("#email").value,
+    };
+
+    let products = [];
+    for (let product of productLocalStorage) {
+      products.push(product._id)
+    }
+
+    console.log(products)
+    const envoiFormulaire = {
+      contact,
+      products,
+    };
+    //Envoi du formulaire dans le localStorage uniquement si les données sont correctes
+    if (
+      controlPrenomNomVille(contact.firstName) &&
+      controlPrenomNomVille(contact.lastName) &&
+      controlPrenomNomVille(contact.city) &&
+      controlAdresse(contact.address) &&
+      controlEmail(contact.email)
+    ) {
+      return fetch("http://localhost:3000/api/products/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(envoiFormulaire),
+      })
+      .then((response) => response.json())
+        .then((order) => {
+          console.log(order)
+          window.location.href = `./confirmation.html?orderId=${order.orderId}`;
+         
+          
+        })
+        .catch((err) => console.log("Il y a un problème: ", err));
+    } else {
+      alert("Merci de vérifier vos données dans le formulaire");
+    }
+  }
+}
+  

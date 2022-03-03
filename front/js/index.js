@@ -24,6 +24,7 @@ function displayData(data) {
         </article>
         </a>
       `;
+     
     console.log(product);
   });
 }

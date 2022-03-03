@@ -8,7 +8,7 @@ const init = async function () {
     .then((res) => {
       return res.json();
     });
-
+    
   await productPromise;
   productPromise.then((data) => {
     console.log(data);
