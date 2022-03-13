@@ -226,14 +226,14 @@ function form() {
       .then((response) => response.json())
         .then((order) => {
           console.log(order)
-          window.location.href = `./confirmation.html?orderId=${order.orderId}`;
-         
-          
+          localStorage.removeItem("selectedProducts")
+          window.location.href = `./confirmation.html?orderId=${order.orderId}`;  
         })
         .catch((err) => console.log("Il y a un problème: ", err));
     } else {
       alert("Merci de vérifier vos données dans le formulaire");
     }
   }
+
 }
   
