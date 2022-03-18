@@ -32,7 +32,7 @@ document.getElementById("addToCart").addEventListener("click", () => {
   const color = document.querySelector("#colors").value;
 
   if (parseInt(quantity) <= 0 || !color) {
-    alert("Choisir une couleur ou bien aumoins 1 article");
+    alert("Choisir une couleur ou bien au moins 1 article");
     return;
   }
   let products = window.localStorage.getItem("selectedProducts");
